@@ -105,7 +105,7 @@ const kitCta = `<aside class="kit-cta">
 </aside>`;
 
 // ---------- layout ----------
-function layout({ title, description, urlPath, body, schema = [], noindex = false, ogType = "website", bodyAttrs = "" }) {
+function layout({ title, description, urlPath, body, schema = [], noindex = false, ogType = "website", bodyAttrs = "", preload = "" }) {
   const fullTitle = urlPath === "/" ? title : `${title} | ${site.name}`;
   const canonical = abs(urlPath);
   const graph = schema.filter(Boolean);
@@ -137,12 +137,13 @@ ${noindex ? '<meta name="robots" content="noindex, follow">' : ""}
 <meta property="og:site_name" content="${esc(site.name)}">
 <meta name="twitter:card" content="summary_large_image">
 ${og}
-<meta name="theme-color" content="#14213d">
+<meta name="theme-color" content="#0d7a41">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/style.css">
+${preload}
 <script>window.FP=${fpConfig};</script>
 <script src="/assets/main.js" defer></script>
 ${ld}
@@ -157,6 +158,7 @@ ${ld}
     <nav class="main-nav" aria-label="Main">
       <a href="/hire/">Services</a>
       <a href="/guides/">Guides</a>
+      <a class="nav-optional" href="/#how-it-works">How it works</a>
       <a class="nav-cta" href="/free-store-launch-kit/">Free launch kit</a>
     </nav>
   </div>
@@ -259,6 +261,45 @@ function renderPicks(c) {
 const byline = `<p class="byline">By <a href="/about/">${esc(site.author.name)}</a> &middot; Updated ${prettyDate(BUILD_DATE)}</p>`;
 
 // ---------- pages ----------
+const ICON = {
+  all: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
+  store: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9l1.5-5h13L20 9"/><path d="M4 9h16v11H4z"/><path d="M9 20v-6h6v6"/></svg>',
+  content: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></svg>',
+  ads: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V11M10 20V5M16 20v-6M2 20h20"/></svg>',
+  check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  pause: '<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="2" width="3.5" height="12" rx="1"/><rect x="9.5" y="2" width="3.5" height="12" rx="1"/></svg>',
+};
+
+const STAGES = [
+  { id: "all", name: "All services", icon: "all", slugs: null },
+  { id: "store", name: "Store setup", icon: "store", slugs: ["logo-designer", "shopify-developer", "woocommerce-developer"] },
+  { id: "content", name: "Product content", icon: "content", slugs: ["product-photography", "product-description-writer", "product-video-ugc"] },
+  { id: "ads", name: "Ads and tracking", icon: "ads", slugs: ["meta-pixel-capi-setup", "meta-ads-setup", "product-video-ugc"] },
+];
+
+const money = (n) => "$" + n.toLocaleString("en-US");
+const sumRange = (slugs) => slugs.reduce((a, s) => [a[0] + catBySlug[s].costLow, a[1] + catBySlug[s].costHigh], [0, 0]);
+
+const PLANS = [
+  {
+    name: "Lean launch",
+    desc: "For testing a product idea on a small budget. You set up the store yourself and hire help for the parts that matter most.",
+    slugs: ["logo-designer", "product-photography", "product-description-writer", "meta-pixel-capi-setup"],
+    cta: ["Estimate your own budget", "/guides/store-launch-cost/", "btn btn-ghost btn-block"],
+  },
+  {
+    name: "Full launch",
+    popular: true,
+    desc: "For launching with ads from day one. Specialists handle the store, product content, tracking and first campaigns.",
+    slugs: ["shopify-developer", "logo-designer", "product-photography", "product-description-writer", "meta-pixel-capi-setup", "product-video-ugc", "meta-ads-setup"],
+    cta: ["Get the free launch kit", "/free-store-launch-kit/", "btn btn-primary btn-block"],
+  },
+];
+
+function picture(name, alt, w, h, cls = "") {
+  return `<picture><source srcset="/assets/media/${name}.webp" type="image/webp"><img${cls ? ` class="${cls}"` : ""} src="/assets/media/${name}.jpg" alt="${esc(alt)}" width="${w}" height="${h}" loading="lazy" decoding="async"></picture>`;
+}
+
 function buildHome() {
   const faqs = [
     { q: "What is FreelancePicks?", a: "An independent guide for people launching and growing online stores. For each service, we explain what a good job includes, what it should cost and how to vet a seller, then point you to sellers worth considering." },
@@ -266,41 +307,167 @@ function buildHome() {
     { q: "How do you choose which sellers to recommend?", a: "We look at portfolio quality, relevant recent reviews, clear packages and delivery terms, and whether the seller follows safe practices like collaborator or partner access instead of asking for passwords." },
   ];
   const faq = faqBlock(faqs);
+  const tile = (c) =>
+    `<a class="tile" href="/hire/${c.slug}/"><span class="tile-name">${esc(c.name)}</span><span class="tile-meta">Typical ${esc(
+      (c.pricing[1] || c.pricing[0]).range
+    )}</span><span class="tile-go">See guide <span aria-hidden="true">&rarr;</span></span></a>`;
+
+  const tabs = STAGES.map(
+    (s, i) =>
+      `<button class="tab" type="button" role="tab" id="tab-${s.id}" aria-controls="panel-${s.id}" aria-selected="${i === 0}"${
+        i === 0 ? "" : ' tabindex="-1"'
+      }>${ICON[s.icon]}<span>${esc(s.name)}</span></button>`
+  ).join("");
+  const panels = STAGES.map((s, i) => {
+    const list = s.slugs ? s.slugs.map((x) => catBySlug[x]) : categories;
+    return `<div class="tile-grid" role="tabpanel" id="panel-${s.id}" aria-labelledby="tab-${s.id}"${i === 0 ? "" : " hidden"}>${list
+      .map(tile)
+      .join("")}</div>`;
+  }).join("");
+
+  const logoPricing = catBySlug["logo-designer"].pricing;
+  const first = categories[0];
+
+  const plans = PLANS.map((p) => {
+    const [lo, hi] = sumRange(p.slugs);
+    return `<div class="plan${p.popular ? " is-popular" : ""}">
+  ${p.popular ? '<span class="badge">Most popular</span>' : ""}
+  <h3>${esc(p.name)}</h3>
+  <p class="plan-desc">${esc(p.desc)}</p>
+  <p class="plan-cost">${money(lo)} - ${money(hi)}</p>
+  <p class="plan-cost-label">Typical freelance cost</p>
+  <hr>
+  <ul class="checks">${p.slugs.map((s) => `<li><a href="/hire/${s}/">${esc(catBySlug[s].name)}</a></li>`).join("")}</ul>
+  <a class="${p.cta[2]}" href="${p.cta[1]}">${esc(p.cta[0])}</a>
+</div>`;
+  }).join("");
+
+  const chips = ["shopify-developer", "logo-designer", "meta-pixel-capi-setup", "product-video-ugc"]
+    .map((s) => `<a href="/hire/${s}/">${esc(catBySlug[s].name)}</a>`)
+    .join("");
+
   const body = `
-<section class="hero">
-  <div class="wrap hero-grid">
-    <div>
-      <p class="eyebrow">For new and growing online stores</p>
+<div class="wrap">
+  <a class="announce" href="/free-store-launch-kit/"><span class="announce-tag">Free</span> <span>The Store Launch Kit<span class="announce-long">: a 20-point checklist plus a cost sheet for everything you can outsource</span></span> <span class="announce-link">Get it <span aria-hidden="true">&rarr;</span></span></a>
+  <section class="hero-media" aria-label="Introduction">
+    <video class="hero-video" muted loop playsinline preload="none" poster="/assets/media/hero-poster.jpg" data-src-sm="/assets/media/hero-720.mp4" data-src-lg="/assets/media/hero.mp4" aria-hidden="true"></video>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
       <h1>Hire the right freelancer for every step of your store launch</h1>
-      <p class="lead">Honest price guides, vetting checklists and hand-picked sellers for logo design, store setup, product photos, copy, tracking and ads. Written by a performance marketer who has run ads for ecommerce brands for 7+ years.</p>
-      <div class="hero-actions">
-        <a class="btn btn-primary btn-lg" href="/hire/">Browse services</a>
-        <a class="btn btn-ghost btn-lg" href="/free-store-launch-kit/">Get the free launch kit</a>
+      <p>Honest price guides, vetting checklists and hand-picked sellers for logo design, store setup, product content, tracking and ads.</p>
+      <form class="hero-search" action="/hire/" method="get" role="search" data-hero-search>
+        <label class="sr-only" for="hero-q">What do you need help with?</label>
+        <input id="hero-q" name="q" type="search" list="service-list" placeholder="e.g. logo, Shopify, ads" autocomplete="off">
+        <datalist id="service-list">${categories.map((c) => `<option value="${esc(c.name)}"></option>`).join("")}</datalist>
+        <button class="btn btn-primary" type="submit">Find help</button>
+      </form>
+      <div class="chips"><span>Popular:</span>${chips}</div>
+    </div>
+    <button class="video-toggle" type="button" data-video-toggle aria-label="Pause background video" hidden>${ICON.pause}</button>
+  </section>
+</div>
+
+<section class="proof wrap" aria-label="What every guide includes">
+  <p class="proof-label">Every hiring guide includes</p>
+  <ul class="proof-list">${["Typical prices", "What a good package includes", "Vetting checklist", "Questions to ask", "Red flags to avoid"]
+    .map((t) => `<li>${ICON.check}${esc(t)}</li>`)
+    .join("")}</ul>
+</section>
+
+<section class="section wrap" id="services">
+  <div class="section-head center"><h2>Find help for every step of your launch</h2></div>
+  <div class="tabs" role="tablist" aria-label="Service groups" data-tabs>${tabs}</div>
+  ${panels}
+  <a class="more-link" href="/hire/">View all services <span aria-hidden="true">&rarr;</span></a>
+</section>
+
+<section class="section wrap start-grid">
+  <div>
+    <p class="pill-label"><span class="dot"></span>Quick start</p>
+    <h2>Not sure what to hire first?</h2>
+    <p class="lead">Pick where your store is right now and go straight to the guide that matters most.</p>
+  </div>
+  <div class="quiz-card">
+    <div class="quiz-head"><h3>Where is your store right now?</h3><span class="quiz-step">Step 1 of 3</span></div>
+    <div class="quiz-options">
+      <a class="quiz-opt" href="/guides/what-to-outsource-first/"><strong>No store yet</strong><span>See what to outsource first</span></a>
+      <a class="quiz-opt" href="/hire/meta-pixel-capi-setup/"><strong>Live, but no sales yet</strong><span>Fix tracking before ads</span></a>
+      <a class="quiz-opt" href="/hire/product-photography/"><strong>Product pages need work</strong><span>Better photos and copy</span></a>
+      <a class="quiz-opt" href="/hire/product-video-ugc/"><strong>Ready to scale ads</strong><span>Fresh video creatives</span></a>
+    </div>
+  </div>
+</section>
+
+<section class="section wrap" id="how-it-works">
+  <div class="section-head"><h2>How it works</h2></div>
+  <div class="how-grid">
+    <article class="how-card">
+      <div class="how-media how-brand"><div class="how-brand-inner"><span class="logo"><img src="/assets/favicon.svg" alt="" width="36" height="36"><span>Freelance<b>Picks</b></span></span><span class="how-pill">Pick a service</span></div></div>
+      <h3>1. Pick the service you need</h3>
+      <p>Browse by launch stage, or use the quick start above to find the guide that fits your store.</p>
+    </article>
+    <article class="how-card">
+      <div class="how-media how-prices" aria-hidden="true">
+        <p class="how-prices-title">${esc(first.name)}: typical prices</p>
+        ${logoPricing
+          .map((p, i) => `<div class="how-row${i === 1 ? " is-pick" : ""}"><span>${esc(p.tier)}</span><strong>${esc(p.range)}</strong></div>`)
+          .join("")}
       </div>
-    </div>
-    <div class="hero-card" aria-hidden="true">
-      <p class="hero-card-title">Store launch checklist</p>
-      <ul>
-        <li class="done">Logo and brand files</li>
-        <li class="done">Store theme and pages</li>
-        <li class="done">Product photos edited</li>
-        <li>Pixel and Conversions API</li>
-        <li>First 3 video ads</li>
-      </ul>
-      <p class="hero-card-foot">Typical freelance cost: <strong>$700 - $2,000</strong></p>
-    </div>
+      <h3>2. Know the fair price and what to check</h3>
+      <p>Every guide shows what a good package includes, typical prices, a vetting checklist and red flags.</p>
+    </article>
+    <article class="how-card">
+      <div class="how-media">${picture("store-editor", "A store owner editing an online store theme on a laptop", 1200, 800)}</div>
+      <h3>3. Hire with confidence and launch</h3>
+      <p>Compare our picks, start with a small order or sample, and keep all communication on the platform.</p>
+    </article>
   </div>
 </section>
 
 <section class="section wrap">
-  <div class="section-head">
-    <h2>Services for launching your store</h2>
-    <p>Each guide covers what is included, typical prices, questions to ask and red flags to avoid.</p>
+  <div class="insights">
+    <div>
+      <h2>Know what freelancers really charge</h2>
+      <p>Pick a service to see typical budget, standard and premium prices before you start comparing sellers.</p>
+      <div class="price-explorer" data-price-explorer>
+        <label class="sr-only" for="pe-select">Service</label>
+        <select id="pe-select">${categories
+          .map((c) => `<option value="${c.slug}" data-tiers="${esc(JSON.stringify(c.pricing.map((p) => p.range)))}">${esc(c.name)}</option>`)
+          .join("")}</select>
+        <dl class="pe-tiers">${first.pricing
+          .map((p, i) => `<div><dt>${esc(p.tier)}</dt><dd data-tier="${i}">${esc(p.range)}</dd></div>`)
+          .join("")}</dl>
+        <a class="pe-link" href="/hire/${first.slug}/" data-pe-link>See the full ${esc(first.name)} guide <span aria-hidden="true">&rarr;</span></a>
+      </div>
+      <a class="btn btn-light" href="/guides/store-launch-cost/">Open the launch cost calculator</a>
+    </div>
+    <svg class="insights-art" viewBox="0 0 400 220" aria-hidden="true">
+      <defs>
+        <linearGradient id="curveFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c9f27a" stop-opacity="0.45"/><stop offset="1" stop-color="#c9f27a" stop-opacity="0"/></linearGradient>
+        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="4"/></filter>
+      </defs>
+      <path d="M10 190 C 110 190, 140 40, 200 40 S 290 190, 390 190" fill="url(#curveFill)"/>
+      <path d="M10 190 C 110 190, 140 40, 200 40 S 290 190, 390 190" fill="none" stroke="#c9f27a" stroke-width="5" filter="url(#glow)" opacity="0.7"/>
+      <path d="M10 190 C 110 190, 140 40, 200 40 S 290 190, 390 190" fill="none" stroke="#e9ffc2" stroke-width="2"/>
+      <line x1="200" y1="40" x2="200" y2="196" stroke="#c9f27a" stroke-dasharray="4 5" opacity="0.6"/>
+      <circle cx="200" cy="40" r="6" fill="#c9f27a"/>
+      <text x="200" y="24" fill="#e3ebe5" font-size="13" font-family="Inter, sans-serif" text-anchor="middle">Typical price</text>
+      <text x="40" y="214" fill="#8d9a92" font-size="12" font-family="Inter, sans-serif">Budget</text>
+      <text x="360" y="214" fill="#8d9a92" font-size="12" font-family="Inter, sans-serif" text-anchor="end">Premium</text>
+    </svg>
   </div>
-  <div class="card-grid">${categories.map(categoryCard).join("")}</div>
 </section>
 
-<section class="section band">
+<section class="section wrap">
+  <div class="section-head center">
+    <h2>Choose how you want to launch</h2>
+    <p>Two common ways to split the work. Every service links to its full hiring guide.</p>
+  </div>
+  <div class="plan-grid">${plans}</div>
+  <a class="more-link" href="/guides/store-launch-cost/">Compare every service in the cost calculator <span aria-hidden="true">&rarr;</span></a>
+</section>
+
+<section class="band">
   <div class="wrap">
     <div class="section-head">
       <h2>How we pick sellers</h2>
@@ -315,23 +482,6 @@ function buildHome() {
   </div>
 </section>
 
-<section class="section wrap">
-  <div class="section-head">
-    <h2>Not sure where to start?</h2>
-  </div>
-  <div class="card-grid two">
-    ${guides
-      .map(
-        (g) => `<a class="card guide-card" href="/guides/${g.slug}/"><p class="eyebrow">Guide</p><h3>${esc(g.title)}</h3><p>${esc(
-          g.summary
-        )}</p><span class="card-link">Read the guide <span aria-hidden="true">&rarr;</span></span></a>`
-      )
-      .join("")}
-  </div>
-</section>
-
-<section class="section wrap">${kitCta}</section>
-
 <section class="section wrap narrow">
   <div class="author-box">
     <div class="author-avatar" aria-hidden="true">RK</div>
@@ -344,6 +494,14 @@ function buildHome() {
 </section>
 
 <div class="wrap narrow">${faq.html}</div>
+
+<section class="section wrap">
+  <div class="cta-band">
+    <h2>Launch your store with the right people</h2>
+    <p>Get the free Store Launch Kit: a 20-point checklist plus a cost sheet that shows what to outsource and what it should cost.</p>
+    <a class="btn btn-light btn-lg" href="/free-store-launch-kit/">Get the free kit</a>
+  </div>
+</section>
 `;
   writePage(
     "/",
@@ -352,6 +510,7 @@ function buildHome() {
       description: site.description,
       urlPath: "/",
       body,
+      preload: '<link rel="preload" as="image" href="/assets/media/hero-poster.jpg" fetchpriority="high">',
       schema: [
         { "@type": "WebSite", name: site.name, url: base + "/", description: site.description },
         { "@type": "Organization", name: site.name, url: base + "/", logo: abs("/assets/favicon.svg") },
@@ -649,6 +808,7 @@ function buildKitPages() {
         <li>A cost sheet with typical freelance prices for every task</li>
         <li>What to outsource first, and what to keep doing yourself</li>
       </ul>
+      <div class="kit-photo">${picture("store-editor", "A store owner editing an online store theme on a laptop", 1200, 800)}</div>
     </div>
     <form class="lead-form" data-lead-form data-success="/kit-thank-you/" novalidate>
       <h2>Get the kit free</h2>

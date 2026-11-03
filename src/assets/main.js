@@ -140,6 +140,84 @@
     }
   }
 
+  // ----- Hero background video -----
+  var video = document.querySelector(".hero-video");
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var saveData = navigator.connection && navigator.connection.saveData;
+  if (video && !reduce && !saveData) {
+    video.src = window.innerWidth < 820 ? video.getAttribute("data-src-sm") : video.getAttribute("data-src-lg");
+    var toggle = document.querySelector("[data-video-toggle]");
+    var playP = video.play();
+    if (playP && playP.catch) playP.catch(function () {});
+    if (toggle) {
+      toggle.hidden = false;
+      var playIcon = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9-5.5z"/></svg>';
+      var pauseIcon = toggle.innerHTML;
+      toggle.addEventListener("click", function () {
+        if (video.paused) { video.play(); toggle.innerHTML = pauseIcon; toggle.setAttribute("aria-label", "Pause background video"); }
+        else { video.pause(); toggle.innerHTML = playIcon; toggle.setAttribute("aria-label", "Play background video"); }
+      });
+    }
+  }
+
+  // ----- Hero search: jump to the matching service page -----
+  var search = document.querySelector("[data-hero-search]");
+  if (search) {
+    var links = Array.prototype.map.call(document.querySelectorAll("#panel-all .tile"), function (a) {
+      return { href: a.getAttribute("href"), text: a.querySelector(".tile-name").textContent.toLowerCase() };
+    });
+    search.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var q = String(search.querySelector("input").value || "").trim().toLowerCase();
+      if (!q) { location.href = "/hire/"; return; }
+      var words = q.split(/\s+/).filter(function (w) { return w.length > 2; });
+      var best = null, bestScore = 0;
+      links.forEach(function (l) {
+        var score = l.text === q ? 100 : 0;
+        words.forEach(function (w) { if (l.text.indexOf(w) > -1) score += w.length; });
+        if (score > bestScore) { bestScore = score; best = l; }
+      });
+      location.href = best ? best.href : "/hire/";
+    });
+  }
+
+  // ----- Service tabs -----
+  var tablist = document.querySelector("[data-tabs]");
+  if (tablist) {
+    var tabs = Array.prototype.slice.call(tablist.querySelectorAll('[role="tab"]'));
+    var select = function (tab, focus) {
+      tabs.forEach(function (t) {
+        var on = t === tab;
+        t.setAttribute("aria-selected", on ? "true" : "false");
+        t.tabIndex = on ? 0 : -1;
+        document.getElementById(t.getAttribute("aria-controls")).hidden = !on;
+      });
+      if (focus) tab.focus();
+    };
+    tabs.forEach(function (t, i) {
+      t.addEventListener("click", function () { select(t); });
+      t.addEventListener("keydown", function (e) {
+        if (e.key === "ArrowRight") select(tabs[(i + 1) % tabs.length], true);
+        if (e.key === "ArrowLeft") select(tabs[(i - 1 + tabs.length) % tabs.length], true);
+      });
+    });
+  }
+
+  // ----- Price explorer -----
+  var pe = document.querySelector("[data-price-explorer]");
+  if (pe) {
+    var sel = pe.querySelector("select");
+    var peLink = pe.querySelector("[data-pe-link]");
+    sel.addEventListener("change", function () {
+      var opt = sel.options[sel.selectedIndex];
+      var tiers = [];
+      try { tiers = JSON.parse(opt.getAttribute("data-tiers")); } catch (err) {}
+      tiers.forEach(function (t, i) { var dd = pe.querySelector('[data-tier="' + i + '"]'); if (dd) dd.textContent = t; });
+      peLink.setAttribute("href", "/hire/" + sel.value + "/");
+      peLink.firstChild.textContent = "See the full " + opt.textContent + " guide ";
+    });
+  }
+
   // ----- Cost calculator -----
   var calc = document.getElementById("cost-calc");
   if (calc) {
