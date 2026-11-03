@@ -2,7 +2,7 @@
 
 Hiring guides and hand-picked freelancers for people launching online stores. Monetized with affiliate links, promoted with Meta Ads and SEO.
 
-Static site with no dependencies, built by `build.js` and hosted on Vercel. Two small serverless functions handle email signups (systeme.io) and Meta Conversions API.
+Static site with no dependencies, built by `build.js` and hosted on Vercel. Two small serverless functions handle kit signups (optionally saved to systeme.io, no emails sent) and Meta Conversions API.
 
 ## Where to edit things
 
@@ -15,7 +15,6 @@ Static site with no dependencies, built by `build.js` and hosted on Vercel. Two 
 | Articles | `data/articles/*.js` (add new ones to `data/articles/index.js`) |
 | Store Launch Kit checklist | `data/kit.js` (used by the kit page and the PDF) |
 | Content plan (30 articles) | `docs/content-plan.md` |
-| Email sequence for kit signups | `docs/email-sequence.md` |
 | Design | `src/assets/style.css` |
 | Tracking, consent, forms, calculator | `src/assets/main.js` |
 
@@ -26,7 +25,7 @@ Push to GitHub and Vercel redeploys automatically.
 - `/` home
 - `/hire/` and 8 service pages at `/hire/<slug>/`
 - `/guides/` with planning guides, the cost calculator and articles (articles live in `data/articles/`, one file each, listed in `data/articles/index.js`)
-- `/free-store-launch-kit/` (lead magnet signup) and `/kit-thank-you/` (the kit itself, noindex)
+- `/free-store-launch-kit/` (lead magnet signup) and `/kit-thank-you/` (one-time download page, noindex)
 - `/about/`, `/affiliate-disclosure/`, `/privacy-policy/`, `404`
 - `sitemap.xml` and `robots.txt` are generated on every build
 
@@ -40,8 +39,7 @@ Push to GitHub and Vercel redeploys automatically.
 
 | Name | Needed for |
 |---|---|
-| `SYSTEME_API_KEY` | Email signup. Without it the form shows "Signups are not open yet". |
-| `SYSTEME_TAG_ID` | Optional. Tag applied to new signups, use it to trigger your email sequence. |
+| `SYSTEME_API_KEY` | Optional. Saves kit signups as contacts in systeme.io. No emails are sent. Without it, the download still works. |
 | `META_PIXEL_ID` | Conversions API (same ID as `metaPixelId` in `data/site.js`). |
 | `META_CAPI_TOKEN` | Conversions API access token from Events Manager. |
 | `META_TEST_EVENT_CODE` | Optional. Remove after testing. |
@@ -58,7 +56,6 @@ Push to GitHub and Vercel redeploys automatically.
 - [ ] Review every price range in `data/categories.js`
 - [ ] Add your first gig picks with your own notes
 - [ ] Set `metaPixelId` / `ga4Id`, and the Vercel env vars
-- [ ] Create the email sequence in systeme.io and set `SYSTEME_TAG_ID`
 - [ ] Add a 1200 x 630 `og.png` to `src/assets/` and set `ogImage` in `data/site.js`
 - [ ] Confirm in your affiliate terms that paid social traffic is allowed
 - [ ] Submit `https://freelancepicks.com/sitemap.xml` in Google Search Console

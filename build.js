@@ -852,10 +852,10 @@ function buildKitPages() {
       <label>First name<input type="text" name="first_name" autocomplete="given-name" maxlength="60"></label>
       <label>Email<input type="email" name="email" autocomplete="email" required></label>
       <label class="hp" aria-hidden="true">Company<input type="text" name="company" tabindex="-1" autocomplete="off"></label>
-      <label class="agree"><input type="checkbox" name="agree" value="yes" required> Send me the kit and occasional emails with store launch tips and freelancer picks. Unsubscribe anytime.</label>
-      <button class="btn btn-accent btn-block btn-lg" type="submit">Send me the kit</button>
+      <label class="agree"><input type="checkbox" name="agree" value="yes" required> I agree to the <a href="/privacy-policy/">privacy policy</a>. No newsletters or spam.</label>
+      <button class="btn btn-accent btn-block btn-lg" type="submit">Get the free kit</button>
       <p class="form-msg" role="status" aria-live="polite"></p>
-      <p class="small">We respect your inbox. Read our <a href="/privacy-policy/">privacy policy</a>.</p>
+      <p class="small">You will get the download link right away on the next page.</p>
     </form>
   </div>
 </section>
@@ -879,57 +879,29 @@ function buildKitPages() {
     { priority: "0.8" }
   );
 
-  // Thank-you page with the kit content (noindex)
-  const groups = require("./data/kit");
-  const checklist = groups
-    .map(
-      (g) => `<h3>${esc(g.name)}</h3><ul class="kit-list">${g.items
-        .map(
-          ([t, slug]) =>
-            `<li><label><input type="checkbox"> <span>${esc(t)}</span></label>${
-              slug ? ` <a class="kit-link" href="/hire/${slug}/">Hire help</a>` : ""
-            }</li>`
-        )
-        .join("")}</ul>`
-    )
-    .join("");
-  const costRows = categories
-    .map(
-      (c) =>
-        `<tr><td><a href="/hire/${c.slug}/">${esc(c.name)}</a></td><td>${esc(c.pricing[0].range)}</td><td>${esc(
-          (c.pricing[1] || c.pricing[0]).range
-        )}</td><td>${esc((c.pricing[2] || c.pricing[0]).range)}</td></tr>`
-    )
-    .join("");
+  // Thank-you page: one download button (noindex)
   simplePage({
     urlPath: "/kit-thank-you/",
-    title: "Your Store Launch Kit",
-    description: "Your free Store Launch Kit: checklist and cost sheet.",
-    h1: "Your Store Launch Kit",
+    title: "Download Your Store Launch Kit",
+    description: "Download your free Store Launch Kit.",
+    h1: "Your Store Launch Kit is ready",
     noindex: true,
     bodyAttrs: "data-lead-page",
     html: `
-<p class="lead">Thanks for signing up. Here is your kit. Bookmark this page so you can come back to it. We have also sent a copy to your inbox.</p>
-<div class="hero-actions"><a class="btn btn-primary" href="/assets/store-launch-kit.pdf" download>Download the PDF kit</a><button type="button" class="btn btn-ghost" onclick="window.print()">Print this page</button></div>
-<h2>Part 1: The 20-point launch checklist</h2>
-<p>Tick items as you go. Where it makes sense to hire help, you will find a link to our guide for that service.</p>
-${checklist}
-<h2>Part 2: The cost sheet</h2>
-<p>Typical marketplace prices for each service at the time of writing.</p>
-<div class="table-wrap"><table><thead><tr><th>Service</th><th>Budget</th><th>Typical</th><th>Premium</th></tr></thead><tbody>${costRows}</tbody></table></div>
-<p>Get a total for your own store with the <a href="/guides/store-launch-cost/">store launch cost calculator</a>.</p>
-<h2>Part 3: What to outsource first</h2>
-<ol class="numbered">
-  <li>Tracking (Pixel and Conversions API) before you spend on ads</li>
-  <li>Product image editing</li>
-  <li>Store setup, if you are not technical</li>
-  <li>A clean logo with vector files</li>
-  <li>Product copy</li>
-  <li>Video ad creatives</li>
-  <li>Ads setup, then management once you have sales data</li>
-</ol>
-<p>The full reasoning is in <a href="/guides/what-to-outsource-first/">what to outsource first</a>.</p>
-${disclosureNote}`,
+<div class="download-card">
+  <div class="download-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 20h14"/></svg></div>
+  <div>
+    <p class="download-title">The Store Launch Kit <span>PDF, 4 pages</span></p>
+    <ul class="checks">
+      <li>The 20-point launch checklist</li>
+      <li>The cost sheet with typical freelance prices</li>
+      <li>What to outsource first, plus 6 safe-hiring rules</li>
+    </ul>
+    <a class="btn btn-primary btn-lg" href="/assets/store-launch-kit.pdf" download="FreelancePicks-Store-Launch-Kit.pdf" data-kit-download>Download the kit</a>
+  </div>
+</div>
+<h2>Where to start</h2>
+<p>Most stores get the best return from fixing <a href="/hire/meta-pixel-capi-setup/">tracking</a> and <a href="/hire/product-photography/">product images</a> first. Read <a href="/guides/what-to-outsource-first/">what to outsource first</a> for the full order, or estimate your budget with the <a href="/guides/store-launch-cost/">store launch cost calculator</a>.</p>`,
   });
 }
 
@@ -981,14 +953,14 @@ ${site.contactEmail ? `<h2>Contact</h2><p>Email <a href="mailto:${esc(site.conta
 <p>Last updated: ${prettyDate(BUILD_DATE)}</p>
 <h2>What we collect</h2>
 <ul>
-  <li><strong>Email signups:</strong> when you request the Store Launch Kit, we collect your first name and email address to send you the kit and occasional emails. You can unsubscribe at any time using the link in any email.</li>
+  <li><strong>Kit downloads:</strong> when you request the Store Launch Kit, we collect your first name and email address. We do not send newsletters or marketing emails. You can ask us to delete your details at any time.</li>
   <li><strong>Analytics and advertising cookies:</strong> if you accept cookies, we use tools such as the Meta Pixel and Google Analytics to understand how the site is used and to measure our ads. These tools may set cookies and collect information such as pages visited, links clicked and device details.</li>
   <li><strong>Server events:</strong> if you accept cookies, some events (such as signing up or clicking an affiliate link) may also be sent from our server to Meta through the Conversions API. Email addresses are hashed before they are sent.</li>
 </ul>
 <h2>How we use it</h2>
-<p>To send emails you asked for, to improve the site, and to measure which ads and pages are useful. We do not sell your personal information.</p>
+<p>To give you the kit, to improve the site, and to measure which ads and pages are useful. We do not sell your personal information.</p>
 <h2>Third parties</h2>
-<p>Our email provider stores your signup details. When you click an affiliate link, the marketplace you visit has its own privacy policy and may use cookies to track the referral.</p>
+<p>If we store kit signups, they are kept with a third-party contact management provider. When you click an affiliate link, the marketplace you visit has its own privacy policy and may use cookies to track the referral.</p>
 <h2>Your choices</h2>
 <p>You can decline or change cookie consent at any time using Cookie settings in the footer. To ask about or delete your data, ${
       site.contactEmail ? `email <a href="mailto:${esc(site.contactEmail)}">${esc(site.contactEmail)}</a>` : "contact us through the About page"

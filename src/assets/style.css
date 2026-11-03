@@ -427,3 +427,11 @@ tbody tr:last-child td, tbody tr:last-child th { border-bottom: 0; }
 .prose table td a { font-weight: 500; }
 .prose th, .prose td { white-space: normal; }
 .prose td:nth-child(n+2) { min-width: 90px; }
+
+/* Kit download card */
+.download-card { display: flex; gap: 20px; align-items: flex-start; background: var(--brand-soft); border-radius: var(--radius-lg); padding: 28px; margin: 8px 0 32px; }
+.download-icon { flex: none; width: 56px; height: 56px; border-radius: 16px; background: var(--brand); display: grid; place-items: center; }
+.download-icon svg { width: 28px; height: 28px; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.download-title { font-family: var(--display); font-weight: 800; font-size: 1.3rem; margin-bottom: 10px; }
+.download-title span { font-family: var(--sans); font-weight: 500; font-size: 0.85rem; color: var(--muted); margin-left: 6px; }
+@media (max-width: 560px) { .download-card { flex-direction: column; padding: 22px; } }
