@@ -1,10 +1,12 @@
 // Guides. Each one becomes a page at /guides/<slug>/.
 // type "article" uses the html below. type "calculator" is rendered by build.js.
 
-module.exports = [
+const baseGuides = [
   {
     slug: "what-to-outsource-first",
     type: "article",
+    label: "Planning",
+    services: ["meta-pixel-capi-setup", "product-photography", "shopify-developer"],
     title: "What to Outsource First When Launching an Online Store",
     metaTitle: "What to Outsource First When Launching an Online Store",
     metaDesc:
@@ -83,6 +85,7 @@ module.exports = [
   {
     slug: "store-launch-cost",
     type: "calculator",
+    label: "Calculator",
     title: "How Much Does It Cost to Launch an Online Store?",
     metaTitle: "Online Store Launch Cost Calculator: What Freelancers Charge",
     metaDesc:
@@ -96,3 +99,6 @@ module.exports = [
     ],
   },
 ];
+
+// Articles live in data/articles/. Add new ones to data/articles/index.js.
+module.exports = [...baseGuides, ...require("./articles")];

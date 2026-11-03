@@ -467,6 +467,20 @@ function buildHome() {
   <a class="more-link" href="/guides/store-launch-cost/">Compare every service in the cost calculator <span aria-hidden="true">&rarr;</span></a>
 </section>
 
+<section class="section wrap">
+  <div class="section-head"><h2>Latest guides</h2><p>Real prices, checklists and honest comparisons for store owners.</p></div>
+  <div class="card-grid three">${guides
+    .slice(-6)
+    .reverse()
+    .map(
+      (g) => `<a class="card guide-card" href="/guides/${g.slug}/"><p class="eyebrow">${esc(g.label || "Guide")}</p><h3>${esc(
+        g.title
+      )}</h3><p>${esc(g.summary)}</p><span class="card-link">Read the guide <span aria-hidden="true">&rarr;</span></span></a>`
+    )
+    .join("")}</div>
+  <a class="more-link" href="/guides/">All guides <span aria-hidden="true">&rarr;</span></a>
+</section>
+
 <section class="band">
   <div class="wrap">
     <div class="section-head">
@@ -612,6 +626,14 @@ function buildCategory(c) {
         ? `<section class="section"><h2>Related services</h2><div class="card-grid three">${related.map(categoryCard).join("")}</div></section>`
         : ""
     }
+    ${(() => {
+      const rg = guides.filter((g) => (g.services || []).includes(c.slug));
+      return rg.length
+        ? `<section class="section"><h2>Guides for this service</h2><ul class="guide-links">${rg
+            .map((g) => `<li><a href="/guides/${g.slug}/">${esc(g.title)}</a><span>${esc(g.summary)}</span></li>`)
+            .join("")}</ul></section>`
+        : "";
+    })()}
   </article>
 
   <aside class="sidebar">
@@ -669,9 +691,9 @@ function buildGuidesIndex() {
 </section>
 <section class="section wrap"><div class="card-grid two">${guides
     .map(
-      (g) => `<a class="card guide-card" href="/guides/${g.slug}/"><h3>${esc(g.title)}</h3><p>${esc(
-        g.summary
-      )}</p><span class="card-link">Read the guide <span aria-hidden="true">&rarr;</span></span></a>`
+      (g) => `<a class="card guide-card" href="/guides/${g.slug}/"><p class="eyebrow">${esc(g.label || "Guide")}</p><h3>${esc(
+        g.title
+      )}</h3><p>${esc(g.summary)}</p><span class="card-link">Read the guide <span aria-hidden="true">&rarr;</span></span></a>`
     )
     .join("")}</div></section>
 <section class="section wrap">${kitCta}</section>
@@ -738,11 +760,17 @@ function buildGuide(g) {
   ]);
   const faq = faqBlock(g.faqs);
   const content = g.type === "calculator" ? calculatorHtml() : g.html;
+  const relatedServices = (g.services || []).map((s) => catBySlug[s]).filter(Boolean);
+  const sources = (g.sources || []).length
+    ? `<section class="section sources"><h2>Sources</h2><p class="small">Prices and fees change. We checked these sources when this guide was last updated.</p><ol>${g.sources
+        .map((s) => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener nofollow">${esc(s.title)}</a></li>`)
+        .join("")}</ol></section>`
+    : "";
   const body = `
 <div class="wrap">${bc.html}</div>
 <article class="wrap narrow content">
   <header class="page-head">
-    <p class="eyebrow">Guide</p>
+    <p class="eyebrow">${esc(g.label || "Guide")}</p>
     <h1>${esc(g.title)}</h1>
     ${byline}
     <p class="lead">${esc(g.intro)}</p>
@@ -750,6 +778,14 @@ function buildGuide(g) {
   </header>
   <div class="prose">${content}</div>
   ${faq.html}
+  ${
+    relatedServices.length
+      ? `<section class="section"><h2>Hiring guides mentioned in this article</h2><div class="card-grid three">${relatedServices
+          .map(categoryCard)
+          .join("")}</div></section>`
+      : ""
+  }
+  ${sources}
   <section class="section">${kitCta}</section>
 </article>
 `;
@@ -807,6 +843,7 @@ function buildKitPages() {
         <li>A 20-point launch checklist across brand, store, products, tracking and marketing</li>
         <li>A cost sheet with typical freelance prices for every task</li>
         <li>What to outsource first, and what to keep doing yourself</li>
+        <li>A designed 4-page PDF you can print and keep</li>
       </ul>
       <div class="kit-photo">${picture("store-editor", "A store owner editing an online store theme on a laptop", 1200, 800)}</div>
     </div>
@@ -843,53 +880,7 @@ function buildKitPages() {
   );
 
   // Thank-you page with the kit content (noindex)
-  const groups = [
-    {
-      name: "Brand",
-      items: [
-        ["Domain name bought and connected", null],
-        ["Logo in vector, transparent PNG and square icon versions", "logo-designer"],
-        ["Brand colors and fonts chosen", "logo-designer"],
-        ["Professional email address on your domain", null],
-      ],
-    },
-    {
-      name: "Store",
-      items: [
-        ["Theme set up and tested on mobile", "shopify-developer"],
-        ["Payments, shipping zones and taxes configured", "shopify-developer"],
-        ["Policy pages: shipping, returns, privacy and terms", "shopify-developer"],
-        ["About and Contact pages written", "product-description-writer"],
-      ],
-    },
-    {
-      name: "Products",
-      items: [
-        ["4 to 6 edited images per product", "product-photography"],
-        ["Descriptions that answer buyer questions", "product-description-writer"],
-        ["SEO titles and meta descriptions", "product-description-writer"],
-        ["Variants, prices and stock checked", null],
-      ],
-    },
-    {
-      name: "Tracking",
-      items: [
-        ["Meta Pixel with standard events", "meta-pixel-capi-setup"],
-        ["Conversions API with deduplication", "meta-pixel-capi-setup"],
-        ["GA4 and Google Search Console connected", null],
-        ["Test order placed and checked in Events Manager", "meta-pixel-capi-setup"],
-      ],
-    },
-    {
-      name: "Marketing",
-      items: [
-        ["Email signup popup and welcome email", null],
-        ["Abandoned cart email", null],
-        ["First 3 to 5 ad creatives, including video", "product-video-ugc"],
-        ["Ad account, audiences and testing plan ready", "meta-ads-setup"],
-      ],
-    },
-  ];
+  const groups = require("./data/kit");
   const checklist = groups
     .map(
       (g) => `<h3>${esc(g.name)}</h3><ul class="kit-list">${g.items
@@ -919,7 +910,7 @@ function buildKitPages() {
     bodyAttrs: "data-lead-page",
     html: `
 <p class="lead">Thanks for signing up. Here is your kit. Bookmark this page so you can come back to it. We have also sent a copy to your inbox.</p>
-<div class="hero-actions"><button type="button" class="btn btn-ghost" onclick="window.print()">Print or save as PDF</button></div>
+<div class="hero-actions"><a class="btn btn-primary" href="/assets/store-launch-kit.pdf" download>Download the PDF kit</a><button type="button" class="btn btn-ghost" onclick="window.print()">Print this page</button></div>
 <h2>Part 1: The 20-point launch checklist</h2>
 <p>Tick items as you go. Where it makes sense to hire help, you will find a link to our guide for that service.</p>
 ${checklist}

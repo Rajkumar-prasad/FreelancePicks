@@ -11,7 +11,11 @@ Static site with no dependencies, built by `build.js` and hosted on Vercel. Two 
 | **All affiliate links and gig picks** | `data/affiliate-links.js` |
 | Site name, URL, author, Pixel ID, GA4 ID | `data/site.js` |
 | Service pages content and prices | `data/categories.js` |
-| Guides | `data/guides.js` |
+| Guides and calculator | `data/guides.js` |
+| Articles | `data/articles/*.js` (add new ones to `data/articles/index.js`) |
+| Store Launch Kit checklist | `data/kit.js` (used by the kit page and the PDF) |
+| Content plan (30 articles) | `docs/content-plan.md` |
+| Email sequence for kit signups | `docs/email-sequence.md` |
 | Design | `src/assets/style.css` |
 | Tracking, consent, forms, calculator | `src/assets/main.js` |
 
@@ -21,8 +25,7 @@ Push to GitHub and Vercel redeploys automatically.
 
 - `/` home
 - `/hire/` and 8 service pages at `/hire/<slug>/`
-- `/guides/what-to-outsource-first/`
-- `/guides/store-launch-cost/` (cost calculator)
+- `/guides/` with planning guides, the cost calculator and articles (articles live in `data/articles/`, one file each, listed in `data/articles/index.js`)
 - `/free-store-launch-kit/` (lead magnet signup) and `/kit-thank-you/` (the kit itself, noindex)
 - `/about/`, `/affiliate-disclosure/`, `/privacy-policy/`, `404`
 - `sitemap.xml` and `robots.txt` are generated on every build
@@ -59,6 +62,15 @@ Push to GitHub and Vercel redeploys automatically.
 - [ ] Add a 1200 x 630 `og.png` to `src/assets/` and set `ogImage` in `data/site.js`
 - [ ] Confirm in your affiliate terms that paid social traffic is allowed
 - [ ] Submit `https://freelancepicks.com/sitemap.xml` in Google Search Console
+
+## Rebuild the kit PDF
+
+The PDF at `src/assets/store-launch-kit.pdf` is generated from `data/kit.js` and `data/categories.js`. After changing prices or checklist items, regenerate it locally (needs Playwright):
+
+```
+npm install @fontsource/inter @fontsource/plus-jakarta-sans --prefix /tmp/fonts
+node tools/build-kit-pdf.js /tmp/fonts
+```
 
 ## Local preview
 
