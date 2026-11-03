@@ -144,7 +144,7 @@ ${og}
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/style.css">
 ${preload}
-<script>window.FP=${fpConfig};</script>
+<script>document.documentElement.classList.add("js");window.FP=${fpConfig};</script>
 <script src="/assets/main.js" defer></script>
 ${ld}
 </head>
@@ -155,10 +155,14 @@ ${ld}
     <a class="logo" href="/" aria-label="${esc(site.name)} home">
       <img src="/assets/favicon.svg" alt="" width="30" height="30"><span>Freelance<b>Picks</b></span>
     </a>
-    <nav class="main-nav" aria-label="Main">
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="main-nav" aria-label="Open menu" data-nav-toggle>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path class="i-open" d="M4 7h16M4 12h16M4 17h16"/><path class="i-close" d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <nav class="main-nav" id="main-nav" aria-label="Main">
       <a href="/hire/">Services</a>
       <a href="/guides/">Guides</a>
-      <a class="nav-optional" href="/#how-it-works">How it works</a>
+      <a href="/#how-it-works">How it works</a>
+      <a href="/about/">About</a>
       <a class="nav-cta" href="/free-store-launch-kit/">Free launch kit</a>
     </nav>
   </div>

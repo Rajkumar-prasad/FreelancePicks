@@ -234,3 +234,20 @@
     update();
   }
 })();
+
+// ----- Mobile menu -----
+(function () {
+  var btn = document.querySelector("[data-nav-toggle]");
+  var nav = document.getElementById("main-nav");
+  if (!btn || !nav) return;
+  function setOpen(open) {
+    nav.classList.toggle("is-open", open);
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+    btn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+  }
+  btn.addEventListener("click", function () { setOpen(btn.getAttribute("aria-expanded") !== "true"); });
+  nav.addEventListener("click", function (e) { if (e.target.closest("a")) setOpen(false); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") { setOpen(false); } });
+  document.addEventListener("click", function (e) { if (!e.target.closest(".header-inner")) setOpen(false); });
+  window.addEventListener("resize", function () { if (window.innerWidth > 760) setOpen(false); });
+})();
